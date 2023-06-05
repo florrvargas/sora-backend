@@ -43,6 +43,71 @@ router.post('/registro', async (req, res) => {
 		}
 });
 
+////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// mobile ////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+router.post('/registro', async (req, res) => {
+	console.log('EL BODYYYYYYYYYYY', req.body);
+	const { nombre, correo, contraseña, foto, googleId } = req.body;
+	try {
+	// Check if the user already exists
+	const usuarioExistente = await User.findOne({ where: { correo } });
+	if (usuarioExistente) {
+	return res.status(400).send({ error: 'El correo ya está registrado' });
+	}
+	const contraseñaHash = await encrypt(contraseña);
+	const createUser = await User.create({
+	nombre,
+	correo,
+	contraseña: contraseñaHash,
+	foto,
+	googleId,
+	});
+	res.status(200).send({ createUser, message: 'Usuario creado' });
+	} catch (error) {
+	console.log(error);
+	res.status(400).send({ error: error.message });
+	}
+	});
+
+	router.put('/editarUser/:id', async (req, res) => {
+		const { nombre, contraseña, foto } = req.body;
+		const { id } = req.params;
+		try {
+		// Verificar si el usuario existe
+		const usuarioExistente = await User.findOne({
+		where: { id },
+		});
+		if (!usuarioExistente) {
+		return res.status(404).send('Usuario no encontrado');
+		}
+		// Actualizar los campos del usuario si se proporcionan
+		if (nombre) {
+		usuarioExistente.nombre = nombre;
+		}
+		if (foto) {
+		usuarioExistente.foto = foto;
+		}
+		if (contraseña) {
+		usuarioExistente.contraseña = contraseña;
+		}
+		// Guardar los cambios en la base de datos
+		await usuarioExistente.save();
+		res
+		.status(200)
+		.send({ usuario: usuarioExistente, mensaje: 'Usuario actualizado' });
+		} catch (error) {
+		res.status(400).send({ error: error.message });
+		}
+		});
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////// mobile ////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////
+
+
 router.post('/login', async (req, res) => {
 		const {correo, contraseña} = req.body;
 
