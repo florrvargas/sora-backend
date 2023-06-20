@@ -1,81 +1,132 @@
 const {Router} = require('express');
 const router = Router();
-const {Driver} = require('../db');
+const { Driver} = require('../db');
 const {encrypt, compare} = require('../helpers/bcrypt');
 const {mailUsuarioCreado} = require('../helpers/mailsService');
 const { subirImagen } = require('../helpers/cloudinary');
 
 
-router.post('/registro', async (req, res) => {
-	const {	nombre,
-		 	contraseña,
-			correo,
-			foto,
-			direccion,
-			carnetidentidad,
-			hojaDeVida,
-			antecedentes,
-			numeroCuenta,
-			documentosVehiculo,
-			licenciaConducir,
-			imagenSeguro,
-			tipoDeViaje,
-			vehiculoAsegurado,
-		} = req.body;
+// router.post('/registro', async (req, res) => {
+// 	const {	nombre,
+// 		 	contraseña,
+// 			correo,
+// 			foto,
+// 			direccion,
+// 			carnetidentidad,
+// 			hojaDeVida,
+// 			antecedentes,
+// 			numeroCuenta,
+// 			documentosVehiculo,
+// 			licenciaConducir,
+// 			imagenSeguro,
+// 			tipoDeViaje,
+// 			vehiculoAsegurado,
+// 		} = req.body;
 
-	try {
-		const contraseñaHash = await encrypt(contraseña);
+// 	try {
+// 		const contraseñaHash = await encrypt(contraseña);
 
-		const perfil = await subirImagen (req.files.foto.tempFilePath);
-		const carnetidentidad = await subirImagen (req.files.carnetidentidad.tempFilePath);
-		const hojaDeVida = await subirImagen (req.files.hojaDeVida.tempFilePath);
-		const antecedentes = await subirImagen (req.files.antecedentes.tempFilePath);
-		const documentosVehiculo = await subirImagen (req.files.documentosVehiculo.tempFilePath);
-		const licenciaConducir = await subirImagen (req.files.licenciaConducir.tempFilePath);
-		const imagenSeguro = await subirImagen (req.files.imagenSeguro.tempFilePath);
+// 		const perfil = await subirImagen (req.files.foto.tempFilePath);
+// 		const carnetidentidad = await subirImagen (req.files.carnetidentidad.tempFilePath);
+// 		const hojaDeVida = await subirImagen (req.files.hojaDeVida.tempFilePath);
+// 		const antecedentes = await subirImagen (req.files.antecedentes.tempFilePath);
+// 		const documentosVehiculo = await subirImagen (req.files.documentosVehiculo.tempFilePath);
+// 		const licenciaConducir = await subirImagen (req.files.licenciaConducir.tempFilePath);
+// 		const imagenSeguro = await subirImagen (req.files.imagenSeguro.tempFilePath);
   		
   
-  		await fs.unlink(req.files.foto.tempFilePath);
-  		await fs.unlink(req.files.carnetidentidad.tempFilePath);
-  		await fs.unlink(req.files.hojaDeVida.tempFilePath);
-  		await fs.unlink(req.files.antecedentes.tempFilePath);
-  		await fs.unlink(req.files.documentosVehiculo.tempFilePath);
-  		await fs.unlink(req.files.licenciaConducir.tempFilePath);
-  		await fs.unlink(req.files.imagenSeguro.tempFilePath);
+//   		await fs.unlink(req.files.foto.tempFilePath);
+//   		await fs.unlink(req.files.carnetidentidad.tempFilePath);
+//   		await fs.unlink(req.files.hojaDeVida.tempFilePath);
+//   		await fs.unlink(req.files.antecedentes.tempFilePath);
+//   		await fs.unlink(req.files.documentosVehiculo.tempFilePath);
+//   		await fs.unlink(req.files.licenciaConducir.tempFilePath);
+//   		await fs.unlink(req.files.imagenSeguro.tempFilePath);
 
-		const createDriver = await Driver.create({
-			nombre,
-			contraseña: contraseñaHash,
-			correo,
-			foto : perfil.secure_url,
-			direccion,
-			carnetidentidad,
-			hojaDeVida : hojaDeVida.secure_url,
-			antecedentes : antecedentes.secure_url,
-			numeroCuenta,
-			documentosVehiculo : documentosVehiculo.secure_url,
-			licenciaConducir : licenciaConducir.secure_url,
-			imagenSeguro: imagenSeguro.secure_url,
-			tipoDeViaje,
-			vehiculoAsegurado,
-		});
+// 		const createDriver = await Driver.create({
+// 			nombre,
+// 			contraseña: contraseñaHash,
+// 			correo,
+// 			foto : perfil.secure_url,
+// 			direccion,
+// 			carnetidentidad,
+// 			hojaDeVida : hojaDeVida.secure_url,
+// 			antecedentes : antecedentes.secure_url,
+// 			numeroCuenta,
+// 			documentosVehiculo : documentosVehiculo.secure_url,
+// 			licenciaConducir : licenciaConducir.secure_url,
+// 			imagenSeguro: imagenSeguro.secure_url,
+// 			tipoDeViaje,
+// 			vehiculoAsegurado,
+// 		});
 
-		///// notificación por mail - usuario registrado
+// 		///// notificación por mail - usuario registrado
 
-		// const asunto = 'Bienvenida a Sora';
+// 		// const asunto = 'Bienvenida a Sora';
 
-		// const texto = `<p>Hola ${nombre}!<br><br>Estamos muy felices de recibirte en Sora!<br><br>A partir de ahora vas a poder usar nuestro servicio y viajar feliz y segura!<br><br>
-		// 				<br><br>Nos vemos!</p>`;
+// 		// const texto = `<p>Hola ${nombre}!<br><br>Estamos muy felices de recibirte en Sora!<br><br>A partir de ahora vas a poder usar nuestro servicio y viajar feliz y segura!<br><br>
+// 		// 				<br><br>Nos vemos!</p>`;
 
-		// mailUsuarioCreado(correo, asunto, texto);
+// 		// mailUsuarioCreado(correo, asunto, texto);
 
-		/////////
+// 		/////////
 
-		res.status(200).send(createDriver);
+// 		res.status(200).send(createDriver);
+// 	} catch (error) {
+// 		res.status(400).send({error: error.message});
+// 	}
+// });
+
+router.post('/registro', async (req, res) => {
+	const {
+	  nombre,
+	  foto,
+	  contraseña,
+	  correo,
+	  edad,
+	  direccion,
+	  carnetidentidad,
+	  hojaDeVida,
+	  antecedentes,
+	  numeroCuenta,
+	  documentosVehiculo,
+	  licenciaConducir,
+	  imagenSeguro,
+	  tipoDeViaje,
+	  vehiculoAsegurado
+	} = req.body;
+  
+	try {
+		// Verifica si la conductora ya existe
+		const conductoraExistente = await Driver.findOne({ where: { correo } });
+		if (conductoraExistente) {
+		  return res.status(400).send({ error: 'El correo ya está registrado' });
+		}
+		const contraseñaHash = await encrypt(contraseña);
+	  // Crear el registro del conductor en la base de datos
+	  const createDriver = await Driver.create({
+		nombre,
+		foto,
+		contraseña: contraseñaHash,
+		correo,
+		edad,
+		direccion,
+		carnetidentidad,
+		hojaDeVida,
+		antecedentes,
+		numeroCuenta,
+		documentosVehiculo,
+		licenciaConducir,
+		imagenSeguro,
+		tipoDeViaje,
+		vehiculoAsegurado
+	  });
+  
+	  res.status(200).send({createDriver, tipo: "conductora"});
 	} catch (error) {
-		res.status(400).send({error: error.message});
+	  res.status(400).send({ error: error.message });
 	}
-});
+  });
 
 router.post('/login', async (req, res) => {
 	const {correo, contraseña} = req.body;
@@ -101,7 +152,7 @@ router.post('/login', async (req, res) => {
 	}
 });
 
-router.get("/conductoras", async (req, res) => {
+router.get("/", async (req, res) => {
 		try {
 			const drivers = await Driver.findAll();
 			if (!drivers.length) {
@@ -114,7 +165,7 @@ router.get("/conductoras", async (req, res) => {
 		}
 		});
 
-router.get("/conductoras/:correo", async (req, res) => {
+router.get("/:correo", async (req, res) => {
 	try {
 		const { correo } = req.params;
 		const conductora = await Driver.findOne({
@@ -132,7 +183,7 @@ router.get("/conductoras/:correo", async (req, res) => {
 	  }
 	});
 
-router.delete("/conductoras/:correo", async (req, res) => {
+router.delete("/:correo", async (req, res) => {
 
 		const { correo } = req.params;
 			try {
@@ -156,34 +207,37 @@ router.delete("/conductoras/:correo", async (req, res) => {
 		}
 	  });
 
-router.put("/editarConductora", async (req, res) => {
 
-		const { nombre, correo, edad, direccion } = req.body;
-
-		const nuevaConductora = {
-		  nombre,
-		  correo,
-		  edad,
-		  direccion,
-		};
-	  
-		const conductoraEncontrada = await Driver.findOne({
-		  where: {
-			correo: correo,
-		  },
+	  router.put('/:id', async (req, res) => {
+		const { nombre, contraseña, foto} = req.body;
+		const { id } = req.params;
+		try {
+		// Verificar si el usuario existe
+		const usuarioExistente = await Driver.findOne({
+		where: { id },
 		});
-	  
-		await conductoraEncontrada.update(nuevaConductora, { where: { correo: correo } });
-		await conductoraEncontrada.save();
-		const conductoraActualizada = {
-		  nombre: userEncontrado.nombre,
-		  contraseña: userEncontrado.contraseña,
-		  correo: userEncontrado.correo,
-		  edad: userEncontrado.edad,
-		  direccion: userEncontrado.direccion,
-		};
-		res.status(200).send(conductoraActualizada);
-	  });
+		if (!usuarioExistente) {
+		return res.status(404).send('Usuario no encontrado');
+		}
+		// Actualizar los campos del usuario si se proporcionan
+		if (nombre) {
+		usuarioExistente.nombre = nombre;
+		}
+		if (foto) {
+		usuarioExistente.foto = foto;
+		}
+		if (contraseña) {
+		usuarioExistente.contraseña = contraseña;
+		}
+		// Guardar los cambios en la base de datos
+		await usuarioExistente.save();
+		res
+		.status(200)
+		.send({ usuario: usuarioExistente, mensaje: 'Usuario actualizado' });
+		} catch (error) {
+		res.status(400).send({ error: error.message });
+		}
+		});
 	  
 
 module.exports = router;

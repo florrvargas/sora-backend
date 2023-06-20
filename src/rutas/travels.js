@@ -1,13 +1,15 @@
 const {Router} = require('express');
 const router = Router();
 const {Viaje, User, Driver} = require('../db');
+const { or } = require('sequelize');
+const { Op } = require("sequelize");
 
 
 router.post('/viaje', async (req, res) => {
   
   //agreagr fecha
 
-	const {userCorreo, estado, montoTotal, distancia, fecha} = req.body;
+	const {userCorreo, estado, montoTotal, distancia, fecha,origen, destino,duracion, origenLat,origenLng, destinoLat, destinoLng } = req.body;
 
         try {
 		
@@ -17,10 +19,17 @@ router.post('/viaje', async (req, res) => {
               montoTotal,
               distancia,
               fecha,
-              estado: "en espera"   
+              estado,
+              origen,
+              destino,
+              duracion,
+              origenLat,
+              origenLng, 
+              destinoLat, 
+              destinoLng,
             });
     
-            res.status(200).send(createTravel, console.log("viaje creado"));
+            res.status(200).send(createTravel);
         } catch (error) {
             res.status(400).send({error: error.message});
         }
@@ -28,6 +37,7 @@ router.post('/viaje', async (req, res) => {
 
 });
 
+//trae todos los viajes (para admin)
 router.get("/viajes", async (req, res) => {
 	try {
 		const viajes = await Viaje.findAll();
@@ -41,42 +51,105 @@ router.get("/viajes", async (req, res) => {
 	}
 });
 
-router.get("/user/:correo", async (req, res) => {
-		try {
-		  const { correo } = req.params;
-		  const userId = await Viaje.findAll({
-			where: {
-			  correo: correo,
-			  
-			},
-		  });
-		  if (userId) {
-			res.status(200).send(userId);
-		  } else {
-			res.status(400).send("No hay ningun usuario con el correo ingresado");
-		  }
-		} catch (error) {
-		  console.log(error);
-		}
+// trae los viajes en espera
+router.get("/solicitudes", async (req, res) => {
+  try {
+    // Recupera los viajes realizados por la usuaria desde la base de datos
+    const solicitudes = await Viaje.findAll({
+      where: {
+        estado: "en espera", 
+      },
+    });
+
+    // Envía los viajes realizados como respuesta
+    res.status(200).json({ viajes: solicitudes });
+  } catch (error) {
+    console.error("Error al obtener los viajes:", error);
+    res.status(500).json({ message: "Error al obtener los viajes." });
+  }
 });
 
-router.get("/conductora/:correo", async (req, res) => {
-      try {
-        const { correo } = req.params;
-        const userId = await User.findAll({
-        where: {
-          correo: correo,
-    
-        },
-        });
-        if (userId) {
-        res.status(200).send(userId);
-        } else {
-        res.status(400).send("No hay ningun usuario con el correo ingresado");
-        }
-      } catch (error) {
-        console.log(error);
-      }
+// trae los viajes por correo
+router.get("/misViajes", async (req, res) => {
+  try {
+    const { userCorreo, driverCorreo, estado } = req.query;
+
+    // Recupera los viajes realizados por la usuaria desde la base de datos
+    const viajesRealizados = await Viaje.findAll({
+      where: {
+        [Op.or]: [
+          {
+            userCorreo: userCorreo,
+            estado: estado,
+          },
+          {
+            driverCorreo: driverCorreo,
+            estado: estado,
+          },
+        ],
+      },
+    });
+
+    // Envía los viajes realizados como respuesta
+    res.status(200).json({ viajes: viajesRealizados });
+  } catch (error) {
+    console.error("Error al obtener los viajes realizados:", error);
+    res.status(500).json({ message: "Error al obtener los viajes realizados" });
+  }
+});
+
+router.put('/viajeSolicitado/:id', async (req, res) => {
+  const { id } = req.params;
+  const { estado, driverCorreo, codigoSeguridad } = req.body;
+  console.log(driverCorreo)
+
+  try {
+    // Busca el viaje en la base de datos por su ID
+    const viaje = await Viaje.findByPk(id);
+
+    if (!viaje) {
+      return res.status(404).json({ mensaje: 'Viaje no encontrado' });
+    }
+
+    // Actualiza el estado del viaje
+ 
+    viaje.driverCorreo = driverCorreo;
+    viaje.estado = estado;
+    viaje.codigoSeguridad = codigoSeguridad;
+    // viaje.codigoSeguridad = codigoSeguridad;
+    await viaje.save();
+    return res.status(200).json(viaje);
+  } catch (error) {
+    console.error('Error al actualizar el estado del viaje:', error);
+    return res.status(500).json({ mensaje: 'Error del servidor' });
+  }
+});
+
+router.get('/viajeSolicitado/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Busca el viaje en la base de datos por su ID
+    const viaje = await Viaje.findByPk(id);
+
+    if (viaje) {
+      // Extrae las coordenadas de origen y destino del viaje
+      const origen = {
+        lat: viaje.origenLat,
+        lng: viaje.origenLng,
+      };
+      const destino = {
+        lat: viaje.destinoLat,
+        lng: viaje.destinoLng,
+      };
+      return res.json(viaje);
+    } else {
+      return res.status(404).json({ mensaje: 'Viaje no encontrado' });
+    }
+  } catch (error) {
+    console.error('Error al cargar los datos del viaje:', error);
+    return res.status(500).json({ mensaje: 'Error al cargar los datos del viaje' });
+  }
 });
   
 router.delete("/viajes/:id", async (req, res) => {
@@ -103,29 +176,6 @@ router.delete("/viajes/:id", async (req, res) => {
   }
 });
 
-router.put("/editarViaje", async (req, res) => {
-
-  const{id} = req.params
-
-  const { userCorreo, driverCorreo, estado } = req.body;
-
-  const viajeActualizado = {
-    userCorreo,
-    driverCorreo,
-    estado,
-  };
-  
-  const viajeEcontrado = await Driver.findOne({
-    where: {
-      id: id,
-    },
-  });
-  
-  await viajeEcontrado.update(nuevaConductora, { where: { correo: correo } });
-  await viajeEcontrado.save();
-
-  res.status(200).send(viajeEcontrado);
-  });
 
 
     module.exports = router;

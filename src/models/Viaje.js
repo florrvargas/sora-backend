@@ -41,6 +41,9 @@ module.exports = (sequelize) => {
       distancia: {
         type: DataTypes.STRING
       },
+      duracion: {
+        type: DataTypes.STRING
+      },
       fecha: {
         type: DataTypes.DATEONLY,
         defaultValue: DataTypes.NOW,
@@ -48,6 +51,34 @@ module.exports = (sequelize) => {
           notEmpty: true,
           isDate: true,
         },
+      },
+      origen: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      destino: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      origenLat: {
+        type: DataTypes.FLOAT, // Tipo de dato para la latitud del origen
+        allowNull: false,
+      },
+      origenLng: {
+        type: DataTypes.FLOAT, // Tipo de dato para la longitud del origen
+        allowNull: false,
+      },
+      destinoLat: {
+        type: DataTypes.FLOAT, // Tipo de dato para la latitud del destino
+        allowNull: false,
+      },
+      destinoLng: {
+        type: DataTypes.FLOAT, // Tipo de dato para la longitud del destino
+        allowNull: false,
+      },
+      codigoSeguridad: {
+        type: DataTypes.STRING, // Tipo de dato para la longitud del destino
+        allowNull: true,
       },
     },
     { timestamps: false }

@@ -5,43 +5,43 @@ const {encrypt, compare} = require('../helpers/bcrypt');
 const {tokenSign} = require('../helpers/generarToken');
 const {mailUsuarioCreado} = require('../helpers/mailsService');
 
-router.post('/registro', async (req, res) => {
-		const {nombre, correo, contraseña, foto} = req.body;
+// router.post('/registro', async (req, res) => {
+// 		const {nombre, correo, contraseña, foto} = req.body;
 
-		try {
-			const contraseñaHash = await encrypt(contraseña);
-			const createUser = await User.findOrCreate({
-				where: { correo },
-				defaults: { 
-				nombre,
-				correo,
-				contraseña: contraseñaHash,
-				foto,
-				}
-			});
+// 		try {
+// 			const contraseñaHash = await encrypt(contraseña);
+// 			const createUser = await User.findOrCreate({
+// 				where: { correo },
+// 				defaults: { 
+// 				nombre,
+// 				correo,
+// 				contraseña: contraseñaHash,
+// 				foto,
+// 				}
+// 			});
 
-			///// notificación por mail - usuario registrado
+// 			///// notificación por mail - usuario registrado
 
-			// const asunto = 'Bienvenid@ a Sora';
+// 			// const asunto = 'Bienvenid@ a Sora';
 
-			// const texto = `<p>Hola ${nombre}!<br><br>Estamos muy felices de recibirte en Sora!<br><br>A partir de ahora vas a poder usar nuestro servicio y viajar feliz y segura!<br><br>
-			// 				<br><br>Nos vemos!</p>`;
+// 			// const texto = `<p>Hola ${nombre}!<br><br>Estamos muy felices de recibirte en Sora!<br><br>A partir de ahora vas a poder usar nuestro servicio y viajar feliz y segura!<br><br>
+// 			// 				<br><br>Nos vemos!</p>`;
 
-			// mailUsuarioCreado(correo, asunto, texto);
+// 			// mailUsuarioCreado(correo, asunto, texto);
 
-			const user = {
-				contraseña:contraseñaHash,
-				correo:correo
-			}
+// 			const user = {
+// 				contraseña:contraseñaHash,
+// 				correo:correo
+// 			}
 			
-			res.status(200).send({user, res:"Usuario creado"});
+// 			res.status(200).send({user, res:"Usuario creado"});
 
-		} catch (error) {
+// 		} catch (error) {
 
-			res.status(400).send({error: error.message});
+// 			res.status(400).send({error: error.message});
 
-		}
-});
+// 		}
+// });
 
 ////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// mobile ////////////////////////////////////////////////
@@ -51,25 +51,25 @@ router.post('/registro', async (req, res) => {
 	console.log('EL BODYYYYYYYYYYY', req.body);
 	const { nombre, correo, contraseña, foto, googleId } = req.body;
 	try {
-	// Check if the user already exists
-	const usuarioExistente = await User.findOne({ where: { correo } });
-	if (usuarioExistente) {
-	return res.status(400).send({ error: 'El correo ya está registrado' });
-	}
-	const contraseñaHash = await encrypt(contraseña);
-	const createUser = await User.create({
-	nombre,
-	correo,
-	contraseña: contraseñaHash,
-	foto,
-	googleId,
-	});
-	res.status(200).send({ createUser, message: 'Usuario creado' });
+	  // Check if the user already exists
+	  const usuarioExistente = await User.findOne({ where: { correo } });
+	  if (usuarioExistente) {
+		return res.status(400).send({ error: 'El correo ya está registrado' });
+	  }
+	  const contraseñaHash = await encrypt(contraseña);
+	  const createUser = await User.create({
+		nombre,
+		correo,
+		contraseña: contraseñaHash,
+		foto,
+		googleId,
+	  });
+	  res.status(200).send({ createUser, tipo: 'pasajera', message: 'Usuario creado' });
 	} catch (error) {
-	console.log(error);
-	res.status(400).send({ error: error.message });
+	  console.log(error);
+	  res.status(400).send({ error: error.message });
 	}
-	});
+  });
 
 	router.put('/editarUser/:id', async (req, res) => {
 		const { nombre, contraseña, foto } = req.body;
@@ -107,9 +107,14 @@ router.post('/registro', async (req, res) => {
 //////////////////////////// mobile ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
+async function verifyPassword(enteredPassword, savedPassword) {
+	const checkContraseña = await compare(enteredPassword, savedPassword);
+	return checkContraseña;
+  }
 
 router.post('/login', async (req, res) => {
 		const {correo, contraseña} = req.body;
+
 
 		try {
 			const usuario = await User.findOne({
@@ -118,17 +123,33 @@ router.post('/login', async (req, res) => {
 				},
 			});
 
-			if (!usuario) {
-				res.status(404).send({error: 'Usuario no encontrado'});
-			}
-			const checkContraseña = await compare(contraseña, usuario.contraseña);
-			console.log(checkContraseña)
-			if (checkContraseña) {
-				res.status(200).send({usuario, res:"login exitoso"});
-			}
-			if (!checkContraseña) {
-				res.status(400).send({error: 'contraseña incorrecta'});
-			}
+			if (usuario) {
+      if (await verifyPassword(contraseña, usuario.contraseña)) {
+        const token = tokenSign(usuario);
+        return res.status(200).json({ token, usuario, tipo: 'pasajera' });
+      } else {
+        return res.status(400).send({ error: 'Contraseña incorrecta para el usuario' });
+      }
+    }
+
+    const conductora = await Driver.findOne({
+      where: {
+        correo: correo,
+      },
+    });
+
+    if (conductora) {
+      if (await verifyPassword(contraseña, conductora.contraseña)) {
+        const token = tokenSign(conductora);
+        return res.status(200).json({ token, conductora, tipo: 'conductora' });
+      } else {
+        return res.status(400).send({ error: 'Contraseña incorrecta para la conductora' });
+      }
+    }
+
+			// Credenciales inválidas
+			return res.status(400).send({error: 'Usuario no encontrado'});
+			
 		} catch (error) {
 			res.status(400).json({ error: error.message });
 		}
@@ -189,37 +210,5 @@ router.delete("/:correo", async (req, res) => {
 		  res.status(400).json({ error: error.message });
 		}
 });
-
-router.put("/", async (req, res) => {
-  
-	const { nombre, correo, edad, direccion  } = req.body;
-  
-	const usuarioActualizado = {
-		nombre,
-		correo,
-		edad,
-		direccion,
-	};
-	
-	const usuarioEncontrado = await User.findOne({
-	  where: {
-		correo: correo,
-	  },
-	});
-	
-	await usuarioEncontrado.update(nuevaConductora, { where: { correo: correo } });
-	await usuarioEncontrado.save();
-  
-	res.status(200).send(viajeEcontrado);
-	});
-  
-
-	router.get("/test", async (req, res)=> {
-
-		res.status(200).send("Back funcionando");
-
-	  });
-
-
 
 module.exports = router;

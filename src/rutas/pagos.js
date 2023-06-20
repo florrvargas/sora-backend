@@ -1,6 +1,7 @@
 const {Router} = require('express');
 const router = Router();
 require('dotenv').config();
+const { Viaje} = require('../db');
 
 
 // SDK de Mercado Pago
@@ -15,35 +16,62 @@ mercadopago.configure({
 
 // Endpoint para crear un pago
 
-router.post("/", (req, res) => {
-	const { costo} = req.body
-// Crea un objeto de preferencia
-let preference = {
-	items: [
-	  {
-		title: "Su viaje",
-		unit_price: parseInt(costo),
-		quantity: 1,
-	  },
-	],
-	"back_urls": {
-        "success": "http://localhost:5173/perfil/viajes/success",
-        "failure": "http://localhost:5173/perfil/viajes/failure",
-        "pending": "http://localhost:5173/perfil/viajes/pending"
-    },
-    "auto_return": "approved",
-  };
+router.post("/", async (req, res) => {
+	const { montoTotal, userCorreo, distancia, duracion, origen, destino, origenLat,origenLng, destinoLat, destinoLng} = req.body
+  console.log(userCorreo)
+  console.log(montoTotal)
+	try {
+
+		const montoTotalFloat = parseFloat(montoTotal); // Convierte montoTotal a un número
+
+		if (isNaN(montoTotalFloat)) {
+		  throw new Error("El montoTotal no es un número válido");
+		}
+
+	// Crea un objeto de preferencia
+    let preference = {
+      items: [
+        {
+          title: "Su viaje",
+          unit_price: montoTotalFloat,
+          quantity: 1,
+        },
+      ],
+      "back_urls": {
+        "success": "https://sora.travel/perfil/viajes/success",
+        "failure": "https://sora.travel/perfil/viajes/failure",
+        "pending": "https://sora.travel/perfil/viajes/pending"
+      },
+      "auto_return": "approved",
+    };
   
-  mercadopago.preferences
-	.create(preference)
-	.then(function (response) {
-	res.redirect(response.body.init_point)
-	})
-	.catch(function (error) {
-	  console.log(error);
-	});
-  
-})
+    const response = await mercadopago.preferences.create(preference);
+
+    // Almacena los datos del viaje en la base de datos
+    const nuevoViaje = await Viaje.create({
+      userCorreo: userCorreo,
+      estado: "en espera",
+      montoTotal: montoTotalFloat,
+      distancia: distancia,
+      duracion,
+      origen,
+      destino,
+      origenLat,
+      origenLng,
+      destinoLat,
+      destinoLng
+    //   fecha: new Date(),
+    //   pagoId: response.body.id, // Agrega el ID de pago proporcionado por Mercado Pago
+    //   referenciaExterna: response.body.external_reference, // Agrega la referencia externa proporcionada por Mercado Pago
+    });
+
+    res.redirect(response.body.init_point);
+  } catch (error) {
+    console.error('Error al realizar el pago:', error);
+	console.log(error)
+    res.status(500).json({ message: 'Error al realizar el pago' });
+  }
+});
 
 
 module.exports = router;
