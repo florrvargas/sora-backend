@@ -52,10 +52,15 @@ router.post('/registro', async (req, res) => {
 	const { nombre, correo, contraseña, foto, googleId } = req.body;
 	try {
 	  // Check if the user already exists
-	  const usuarioExistente = await User.findOne({ where: { correo } });
+	  const usuarioExistente = await User.findOne({ where: { correo: correo } });
 	  if (usuarioExistente) {
-		return res.status(400).send({ error: 'El correo ya está registrado' });
+		return res.status(400).send({ error: 'El correo ya está registrado. Inicie sesión.' });
 	  }
+	  const conductoraExistente = await Driver.findOne({ where: { correo: correo } });
+	  if (conductoraExistente) {
+		return res.status(400).send({ error: 'El correo ya está registrado. Inicie sesión.' });
+	  }
+
 	  const contraseñaHash = await encrypt(contraseña);
 	  const createUser = await User.create({
 		nombre,
@@ -71,11 +76,12 @@ router.post('/registro', async (req, res) => {
 	}
   });
 
+  
+
 	router.put('/editarUser/:id', async (req, res) => {
 		const { nombre, contraseña, foto } = req.body;
 		const { id } = req.params;
 		try {
-		// Verificar si el usuario existe
 		const usuarioExistente = await User.findOne({
 		where: { id },
 		});
@@ -90,7 +96,8 @@ router.post('/registro', async (req, res) => {
 		usuarioExistente.foto = foto;
 		}
 		if (contraseña) {
-		usuarioExistente.contraseña = contraseña;
+		const contraseñaHash = await encrypt(contraseña);
+		usuarioExistente.contraseña = contraseñaHash;
 		}
 		// Guardar los cambios en la base de datos
 		await usuarioExistente.save();
