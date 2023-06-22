@@ -7,14 +7,16 @@ const { Viaje} = require('../db');
 // SDK de Mercado Pago
 const mercadopago = require("mercadopago");
 // Agrega credenciales
-const { MP_ACCESS_TOKEN} = process.env
+const {MP_ACCESS_TOKEN_FLORDEV, MP_ACCESS_TOKEN_FLORPROD, MP_ACCESS_TOKEN_GONZAPROD} = process.env
 
-const api = MP_ACCESS_TOKEN
+console.log( MP_ACCESS_TOKEN_FLORDEV)
 mercadopago.configure({
   // //token dev
-  // access_token: "APP_USR-2279641353678271-042500-9ea457cb9c2fd06842fc0c3833bb91ab-1360165492" ,
-  //token prod
-  access_token: "APP_USR-2515144582042803-042422-9007e48069daa0175684900819925b39-228591816" ,
+  // access_token: MP_ACCESS_TOKEN_FLORDEV ,
+  // //token prod flor
+  // access_token: MP_ACCESS_TOKEN_FLORPROD ,
+  //token prod gonza
+  access_token: MP_ACCESS_TOKEN_GONZAPROD ,
 });
 
 // Endpoint para crear un pago
@@ -36,8 +38,8 @@ router.post("/", async (req, res) => {
       items: [
         {
           title: "Su viaje",
-          // unit_price: montoTotalFloat,
-          unit_price: 1,
+          unit_price: montoTotalFloat,
+          // unit_price: 1,
           quantity: 1,
         },
       ],
