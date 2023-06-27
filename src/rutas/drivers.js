@@ -4,6 +4,8 @@ const { Driver} = require('../db');
 const {encrypt, compare} = require('../helpers/bcrypt');
 const {mailUsuarioCreado} = require('../helpers/mailsService');
 const { subirImagen } = require('../helpers/cloudinary');
+const upload = require('../helpers/fileUpload');
+
 
 
 // router.post('/registro', async (req, res) => {
@@ -77,56 +79,62 @@ const { subirImagen } = require('../helpers/cloudinary');
 // 	}
 // });
 
-router.post('/registro', async (req, res) => {
-	const {
-	  nombre,
-	  foto,
-	  contraseña,
-	  correo,
-	  edad,
-	  direccion,
-	  carnetidentidad,
-	  hojaDeVida,
-	  antecedentes,
-	  numeroCuenta,
-	  documentosVehiculo,
-	  licenciaConducir,
-	  imagenSeguro,
-	  tipoDeViaje,
-	  vehiculoAsegurado
-	} = req.body;
+// router.post('/registro',  upload.fields([
+// 	{ name: 'foto', maxCount: 1 },
+// 	{ name: 'carnetidentidad', maxCount: 1 },
+// 	{ name: 'hojaDeVida', maxCount: 1 },
+// 	{ name: 'antecedentes', maxCount: 1 },
+// 	{ name: 'documentosVehiculo', maxCount: 1 },
+// 	{ name: 'licenciaConducir', maxCount: 1 },
+// 	{ name: 'imagenSeguro', maxCount: 1 },
+//   ]), async (req, res) => {
+
+// 	const { nombre, correo, contrasena, edad, direccion, numeroCuenta, tipoDeViaje, vehiculoAsegurado } = req.body;
+
+//   const foto = req.files['foto'][0].filename;
+//   const carnetidentidad = req.files['carnetidentidad'][0].filename;
+//   const hojaDeVida = req.files['hojaDeVida'][0].filename;
+//   const antecedentes = req.files['antecedentes'][0].filename;
+//   const documentosVehiculo = req.files['documentosVehiculo'][0].filename;
+//   const licenciaConducir = req.files['licenciaConducir'][0].filename;
+//   const imagenSeguro = req.files['imagenSeguro'][0].filename;
+
+
+// 	try {
+// 		// Verifica si la conductora ya existe
+// 		const conductoraExistente = await Driver.findOne({ where: { correo } });
+// 		if (conductoraExistente) {
+// 		  return res.status(400).send({ error: 'El correo ya está registrado' });
+// 		}
+
+// 		const contraseñaHash = await encrypt(contrasena);
+
+// 	  // Crear el registro del conductor en la base de datos
+// 	// Crear el registro del conductor en la base de datos
+//     const createDriver = await Driver.create({
+// 		nombre,
+// 		foto,
+// 		contraseña: contraseñaHash,
+// 		correo,
+// 		edad,
+// 		direccion,
+// 		carnetidentidad,
+// 		hojaDeVida,
+// 		antecedentes,
+// 		numeroCuenta,
+// 		documentosVehiculo,
+// 		licenciaConducir,
+// 		imagenSeguro,
+// 		tipoDeViaje,
+// 		vehiculoAsegurado,
+// 	  });
   
-	try {
-		// Verifica si la conductora ya existe
-		const conductoraExistente = await Driver.findOne({ where: { correo } });
-		if (conductoraExistente) {
-		  return res.status(400).send({ error: 'El correo ya está registrado' });
-		}
-		const contraseñaHash = await encrypt(contraseña);
-	  // Crear el registro del conductor en la base de datos
-	  const createDriver = await Driver.create({
-		nombre,
-		foto,
-		contraseña: contraseñaHash,
-		correo,
-		edad,
-		direccion,
-		carnetidentidad,
-		hojaDeVida,
-		antecedentes,
-		numeroCuenta,
-		documentosVehiculo,
-		licenciaConducir,
-		imagenSeguro,
-		tipoDeViaje,
-		vehiculoAsegurado
-	  });
-  
-	  res.status(200).send({createDriver, tipo: "conductora"});
-	} catch (error) {
-	  res.status(400).send({ error: error.message });
-	}
-  });
+// 	  res.status(200).send({createDriver, tipo: "conductora"});
+// 	} catch (error) {
+// 		console.log(error)
+// 	  res.status(400).send({ error: error.message });
+// 	}
+//   });
 
 router.post('/login', async (req, res) => {
 	const {correo, contraseña} = req.body;

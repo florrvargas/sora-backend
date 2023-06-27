@@ -18,6 +18,14 @@ module.exports = (sequelize) => {
 			type: DataTypes.TEXT,
 			allowNull: true,
 		},
+		dni: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		fotoDni: {
+			type: DataTypes.TEXT,
+			allowNull: false,
+		},
 		contraseña: {
 			type: DataTypes.STRING,
 			allowNull: false,
@@ -25,6 +33,10 @@ module.exports = (sequelize) => {
 		correo: {
 			type: DataTypes.STRING,
 			unique: true,
+			allowNull: false,
+		},
+		genero: {
+			type: DataTypes.STRING,
 			allowNull: false,
 		},
 	},

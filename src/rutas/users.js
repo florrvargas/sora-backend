@@ -4,6 +4,9 @@ const {User, Driver} = require('../db');
 const {encrypt, compare} = require('../helpers/bcrypt');
 const {tokenSign} = require('../helpers/generarToken');
 const {mailUsuarioCreado} = require('../helpers/mailsService');
+const fs = require('fs');
+const path = require('path');
+const upload = require('../helpers/fileUpload');
 
 // router.post('/registro', async (req, res) => {
 // 		const {nombre, correo, contraseña, foto} = req.body;
@@ -47,9 +50,14 @@ const {mailUsuarioCreado} = require('../helpers/mailsService');
 //////////////////////////// mobile ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
-router.post('/registro', async (req, res) => {
+router.post('/registro',upload.single('fotoDni'),  async (req, res) => {
 	console.log('EL BODYYYYYYYYYYY', req.body);
-	const { nombre, correo, contraseña, foto, googleId } = req.body;
+	console.log('EL FILEYYYYYYYYYYY', req.file);
+
+	const { nombre, correo, contrasena, foto, googleId, dni, genero } = req.body;
+	
+	const fotoDni = req.file.filename;
+
 	try {
 	  // Check if the user already exists
 	  const usuarioExistente = await User.findOne({ where: { correo: correo } });
@@ -61,12 +69,15 @@ router.post('/registro', async (req, res) => {
 		return res.status(400).send({ error: 'El correo ya está registrado. Inicie sesión.' });
 	  }
 
-	  const contraseñaHash = await encrypt(contraseña);
+	  const contraseñaHash = await encrypt(contrasena);
 	  const createUser = await User.create({
 		nombre,
 		correo,
 		contraseña: contraseñaHash,
 		foto,
+		fotoDni,
+        dni,
+        genero,
 		googleId,
 	  });
 	  res.status(200).send({ createUser, tipo: 'pasajera', message: 'Usuario creado' });
@@ -135,7 +146,7 @@ router.post('/login', async (req, res) => {
         const token = tokenSign(usuario);
         return res.status(200).json({ token, usuario, tipo: 'pasajera' });
       } else {
-        return res.status(400).send({ error: 'Contraseña incorrecta para el usuario' });
+        return res.status(400).send({ error: 'Contraseña incorrecta.' });
       }
     }
 
@@ -150,12 +161,12 @@ router.post('/login', async (req, res) => {
         const token = tokenSign(conductora);
         return res.status(200).json({ token, conductora, tipo: 'conductora' });
       } else {
-        return res.status(400).send({ error: 'Contraseña incorrecta para la conductora' });
+        return res.status(400).send({ error: 'Contraseña incorrecta.' });
       }
     }
 
 			// Credenciales inválidas
-			return res.status(400).send({error: 'Usuario no encontrado'});
+			return res.status(400).send({error: 'El correo no se encuentra registrado. Por favor, regístrate.'});
 			
 		} catch (error) {
 			res.status(400).json({ error: error.message });

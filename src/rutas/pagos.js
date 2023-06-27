@@ -8,15 +8,16 @@ const { Viaje} = require('../db');
 const mercadopago = require("mercadopago");
 // Agrega credenciales
 const {MP_ACCESS_TOKEN_FLORDEV, MP_ACCESS_TOKEN_FLORPROD, MP_ACCESS_TOKEN_GONZAPROD} = process.env
-console.log( MP_ACCESS_TOKEN_FLORDEV)
+
 
 mercadopago.configure({
-  // //token dev
-  // access_token: "APP_USR-2279641353678271-042500-9ea457cb9c2fd06842fc0c3833bb91ab-1360165492" ,
+  // //token dev flor
+  // access_token: MP_ACCESS_TOKEN_FLORDEV ,
   // //token prod flor
-  // access_token: "APP_USR-2515144582042803-042422-9007e48069daa0175684900819925b39-228591816" ,
-  //token prod gonza
-  access_token: "APP_USR-5891745819511612-062210-d1601aa80dd62369993464a1381586d5-138223204" ,
+  // access_token: MP_ACCESS_TOKEN_FLORPROD ,
+    // //token prod gonza
+  access_token: MP_ACCESS_TOKEN_GONZAPROD ,
+
 });
 
 // Endpoint para crear un pago
@@ -27,7 +28,7 @@ router.post("/", async (req, res) => {
   console.log(montoTotal)
 	try {
 
-		const montoTotalFloat = parseFloat(montoTotal); // Convierte montoTotal a un número
+		const montoTotalFloat = parseFloat(montoTotal);
 
 		if (isNaN(montoTotalFloat)) {
 		  throw new Error("El montoTotal no es un número válido");
@@ -38,11 +39,13 @@ router.post("/", async (req, res) => {
       items: [
         {
           title: "Su viaje",
-          unit_price: montoTotalFloat,
+          unit_price:parseInt(montoTotalFloat),
           // unit_price: 1,
           quantity: 1,
         },
       ],
+      // currency_id: "ARS", 
+      currency_id: "CLP", 
       "back_urls": {
         "success": "https://sora.travel/perfil/viajes/success",
         "failure": "https://sora.travel/perfil/viajes/failure",
@@ -73,9 +76,8 @@ router.post("/", async (req, res) => {
 
     res.redirect(response.body.init_point);
   } catch (error) {
-    console.error('Error al realizar el pago:', error);
-	console.log(error)
-    res.status(500).json({ message: 'Error al realizar el pago' });
+	  console.log("ERRORRRRRRRRRR ", error)
+    res.status(500).json({ message: `Error al realizar el pago, ${error}` });
   }
 });
 
