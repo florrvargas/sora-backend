@@ -16,7 +16,7 @@ mercadopago.configure({
   // //token prod flor
   // access_token: MP_ACCESS_TOKEN_FLORPROD ,
     // //token prod gonza
-  access_token: MP_ACCESS_TOKEN_GONZAPROD ,
+  access_token: "APP_USR-5698623587224157-062312-ddb2951c866c61f0f509f723bdb690a5-138223204" ,
 
 });
 
