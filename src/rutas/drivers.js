@@ -5,62 +5,65 @@ const {encrypt, compare} = require('../helpers/bcrypt');
 const {mailUsuarioCreado} = require('../helpers/mailsService');
 const { subirImagen } = require('../helpers/cloudinary');
 const upload = require('../helpers/fileUpload');
+const fs = require('fs');
 
 
 
-// router.post('/registro', async (req, res) => {
-// 	const {	nombre,
-// 		 	contraseña,
-// 			correo,
-// 			foto,
-// 			direccion,
-// 			carnetidentidad,
-// 			hojaDeVida,
-// 			antecedentes,
-// 			numeroCuenta,
-// 			documentosVehiculo,
-// 			licenciaConducir,
-// 			imagenSeguro,
-// 			tipoDeViaje,
-// 			vehiculoAsegurado,
-// 		} = req.body;
 
-// 	try {
-// 		const contraseñaHash = await encrypt(contraseña);
+// const cloudinary = require('cloudinary').v2;
 
-// 		const perfil = await subirImagen (req.files.foto.tempFilePath);
-// 		const carnetidentidad = await subirImagen (req.files.carnetidentidad.tempFilePath);
-// 		const hojaDeVida = await subirImagen (req.files.hojaDeVida.tempFilePath);
-// 		const antecedentes = await subirImagen (req.files.antecedentes.tempFilePath);
-// 		const documentosVehiculo = await subirImagen (req.files.documentosVehiculo.tempFilePath);
-// 		const licenciaConducir = await subirImagen (req.files.licenciaConducir.tempFilePath);
-// 		const imagenSeguro = await subirImagen (req.files.imagenSeguro.tempFilePath);
-  		
-  
-//   		await fs.unlink(req.files.foto.tempFilePath);
-//   		await fs.unlink(req.files.carnetidentidad.tempFilePath);
-//   		await fs.unlink(req.files.hojaDeVida.tempFilePath);
-//   		await fs.unlink(req.files.antecedentes.tempFilePath);
-//   		await fs.unlink(req.files.documentosVehiculo.tempFilePath);
-//   		await fs.unlink(req.files.licenciaConducir.tempFilePath);
-//   		await fs.unlink(req.files.imagenSeguro.tempFilePath);
+// router.post('/registro', upload.any(), async (req, res) => {
+//   try {
+// 	console.log(req.body)
+// 	console.log(req.files)
+//     const {
+//       nombre,
+//       correo,
+//       contrasena,
+//       edad,
+//       direccion,
+//       numeroCuenta,
+//       tipoDeViaje,
+//       vehiculoAsegurado,
+//     } = req.body;
 
-// 		const createDriver = await Driver.create({
-// 			nombre,
-// 			contraseña: contraseñaHash,
-// 			correo,
-// 			foto : perfil.secure_url,
-// 			direccion,
-// 			carnetidentidad,
-// 			hojaDeVida : hojaDeVida.secure_url,
-// 			antecedentes : antecedentes.secure_url,
-// 			numeroCuenta,
-// 			documentosVehiculo : documentosVehiculo.secure_url,
-// 			licenciaConducir : licenciaConducir.secure_url,
-// 			imagenSeguro: imagenSeguro.secure_url,
-// 			tipoDeViaje,
-// 			vehiculoAsegurado,
-// 		});
+//     const foto = req.files.find(file => file.fieldname === 'foto');
+//     const carnetidentidad = req.files.find(file => file.fieldname === 'carnetidentidad');
+//     const hojaDeVida = req.files.find(file => file.fieldname === 'hojaDeVida');
+//     const antecedentes = req.files.find(file => file.fieldname === 'antecedentes');
+//     const documentosVehiculo = req.files.find(file => file.fieldname === 'documentosVehiculo');
+//     const licenciaConducir = req.files.find(file => file.fieldname === 'licenciaConducir');
+//     const imagenSeguro = req.files.find(file => file.fieldname === 'imagenSeguro');
+
+//     // Subir las imágenes a Cloudinary
+//     const fotoUrl = await subirImagen(foto);
+//     const carnetIdentidadUrl = await subirImagen(carnetidentidad);
+//     const hojaDeVidaUrl = await subirImagen(hojaDeVida);
+//     const antecedentesUrl = await subirImagen(antecedentes);
+//     const documentosVehiculoUrl = await subirImagen(documentosVehiculo);
+//     const licenciaConducirUrl = await subirImagen(licenciaConducir);
+//     const imagenSeguroUrl = await subirImagen(imagenSeguro);
+
+//     const contraseñaHash = await encrypt(contrasena);
+
+//     const createDriver = await Driver.create({
+// 		nombre,
+// 		contraseña: contraseñaHash,
+// 		correo,
+// 		edad,
+// 		foto: fotoUrl,
+// 		direccion,
+// 		carnetidentidad: carnetIdentidadUrl,
+// 		hojaDeVida: hojaDeVidaUrl,
+// 		antecedentes: antecedentesUrl,
+// 		numeroCuenta,
+// 		documentosVehiculo: documentosVehiculoUrl,
+// 		licenciaConducir: licenciaConducirUrl,
+// 		imagenSeguro: imagenSeguroUrl,
+// 		tipoDeViaje,
+// 		vehiculoAsegurado,
+// 	  });
+	  
 
 // 		///// notificación por mail - usuario registrado
 
@@ -73,68 +76,52 @@ const upload = require('../helpers/fileUpload');
 
 // 		/////////
 
-// 		res.status(200).send(createDriver);
-// 	} catch (error) {
-// 		res.status(400).send({error: error.message});
-// 	}
-// });
-
-// router.post('/registro',  upload.fields([
-// 	{ name: 'foto', maxCount: 1 },
-// 	{ name: 'carnetidentidad', maxCount: 1 },
-// 	{ name: 'hojaDeVida', maxCount: 1 },
-// 	{ name: 'antecedentes', maxCount: 1 },
-// 	{ name: 'documentosVehiculo', maxCount: 1 },
-// 	{ name: 'licenciaConducir', maxCount: 1 },
-// 	{ name: 'imagenSeguro', maxCount: 1 },
-//   ]), async (req, res) => {
-
-// 	const { nombre, correo, contrasena, edad, direccion, numeroCuenta, tipoDeViaje, vehiculoAsegurado } = req.body;
-
-//   const foto = req.files['foto'][0].filename;
-//   const carnetidentidad = req.files['carnetidentidad'][0].filename;
-//   const hojaDeVida = req.files['hojaDeVida'][0].filename;
-//   const antecedentes = req.files['antecedentes'][0].filename;
-//   const documentosVehiculo = req.files['documentosVehiculo'][0].filename;
-//   const licenciaConducir = req.files['licenciaConducir'][0].filename;
-//   const imagenSeguro = req.files['imagenSeguro'][0].filename;
-
-
-// 	try {
-// 		// Verifica si la conductora ya existe
-// 		const conductoraExistente = await Driver.findOne({ where: { correo } });
-// 		if (conductoraExistente) {
-// 		  return res.status(400).send({ error: 'El correo ya está registrado' });
-// 		}
-
-// 		const contraseñaHash = await encrypt(contrasena);
-
-// 	  // Crear el registro del conductor en la base de datos
-// 	// Crear el registro del conductor en la base de datos
-//     const createDriver = await Driver.create({
-// 		nombre,
-// 		foto,
-// 		contraseña: contraseñaHash,
-// 		correo,
-// 		edad,
-// 		direccion,
-// 		carnetidentidad,
-// 		hojaDeVida,
-// 		antecedentes,
-// 		numeroCuenta,
-// 		documentosVehiculo,
-// 		licenciaConducir,
-// 		imagenSeguro,
-// 		tipoDeViaje,
-// 		vehiculoAsegurado,
-// 	  });
-  
-// 	  res.status(200).send({createDriver, tipo: "conductora"});
+// 		res.status(200).send({createDriver, tipo: "conductora"});
 // 	} catch (error) {
 // 		console.log(error)
 // 	  res.status(400).send({ error: error.message });
 // 	}
 //   });
+
+router.post('/registro', async (req, res) => {
+
+	const { nombre, correo, contraseña, edad, direccion, numeroCuenta, tipoDeViaje, vehiculoAsegurado, foto, carnetidentidad, hojaDeVida, antecedentes, documentosVehiculo, licenciaConducir, imagenSeguro } = req.body;
+  
+	try {
+		// Verifica si la conductora ya existe
+		const conductoraExistente = await Driver.findOne({ where: { correo } });
+		if (conductoraExistente) {
+		  return res.status(400).send({ error: 'El correo ya está registrado' });
+		}
+
+		const contraseñaHash = await encrypt(contraseña);
+
+
+	// Crear el registro del conductor en la base de datos
+    const createDriver = await Driver.create({
+		nombre,
+		foto,
+		contraseña: contraseñaHash,
+		correo,
+		edad,
+		direccion,
+		carnetidentidad,
+		hojaDeVida,
+		antecedentes,
+		numeroCuenta,
+		documentosVehiculo,
+		licenciaConducir,
+		imagenSeguro,
+		tipoDeViaje,
+		vehiculoAsegurado,
+	  });
+  
+	  res.status(200).send({createDriver, tipo: "conductora"});
+	} catch (error) {
+		console.log(error)
+	  res.status(400).send({ error: error.message });
+	}
+  });
 
 router.post('/login', async (req, res) => {
 	const {correo, contraseña} = req.body;
