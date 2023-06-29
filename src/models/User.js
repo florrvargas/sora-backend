@@ -24,7 +24,7 @@ module.exports = (sequelize) => {
 		},
 		fotoDni: {
 			type: DataTypes.TEXT,
-			allowNull: false,
+			allowNull: true,
 		},
 		contraseña: {
 			type: DataTypes.STRING,

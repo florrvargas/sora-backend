@@ -54,9 +54,11 @@ router.post('/registro',upload.single('fotoDni'),  async (req, res) => {
 	console.log('EL BODYYYYYYYYYYY', req.body);
 	console.log('EL FILEYYYYYYYYYYY', req.file);
 
-	const { nombre, correo, contrasena, foto, googleId, dni, genero } = req.body;
-	
+	const { nombre, correo, contrasena, foto, googleId, dni, genero, fotoDni } = req.body;
+	if(req.file){
 	const fotoDni = req.file.filename;
+	console.log(fotoDni)
+	}
 
 	try {
 	  // Check if the user already exists
