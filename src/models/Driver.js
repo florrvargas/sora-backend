@@ -31,9 +31,18 @@ module.exports = (sequelize) => {
 			type: DataTypes.INTEGER,
 			allowNull: false,
 		},
+		dni: {
+			type: DataTypes.INTEGER,
+			allowNull: false,
+			unique: true,
+		},
 		direccion: {
 			type: DataTypes.STRING,
 			allowNull: false,
+		},
+		token: {
+			type: DataTypes.STRING,
+			allowNull: true,
 		},
 		carnetidentidad: {
 			type: DataTypes.TEXT,

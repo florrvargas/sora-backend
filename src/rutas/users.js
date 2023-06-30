@@ -4,9 +4,9 @@ const {User, Driver} = require('../db');
 const {encrypt, compare} = require('../helpers/bcrypt');
 const {tokenSign} = require('../helpers/generarToken');
 const {mailUsuarioCreado} = require('../helpers/mailsService');
-const fs = require('fs');
-const path = require('path');
 const upload = require('../helpers/fileUpload');
+const { Op } = require('sequelize');
+
 
 // router.post('/registro', async (req, res) => {
 // 		const {nombre, correo, contraseña, foto} = req.body;
@@ -50,23 +50,33 @@ const upload = require('../helpers/fileUpload');
 //////////////////////////// mobile ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////
 
-router.post('/registro',upload.single('fotoDni'),  async (req, res) => {
+router.post('/registro', upload.single('fotoDni'),  async (req, res) => {
 	console.log('EL BODYYYYYYYYYYY', req.body);
 	console.log('EL FILEYYYYYYYYYYY', req.file);
 
-	const { nombre, correo, contrasena, foto, googleId, dni, genero } = req.body;
+	const { nombre, correo, contrasena, foto, googleId, dni, genero, token } = req.body;
 	
 	const fotoDni = req.file.filename;
 
 	try {
 	  // Check if the user already exists
-	  const usuarioExistente = await User.findOne({ where: { correo: correo } });
+	  const usuarioExistente = await User.findOne({ where: {
+		[Op.or]: [
+		  { correo: correo },
+		  { dni: dni }
+		]
+	  } });
 	  if (usuarioExistente) {
 		return res.status(400).send({ error: 'El correo ya está registrado. Inicie sesión.' });
 	  }
-	  const conductoraExistente = await Driver.findOne({ where: { correo: correo } });
+	  const conductoraExistente = await Driver.findOne({ where: {
+		[Op.or]: [
+		  { correo: correo },
+		  { dni: dni }
+		]
+	  } });
 	  if (conductoraExistente) {
-		return res.status(400).send({ error: 'El correo ya está registrado. Inicie sesión.' });
+		return res.status(400).send({ error: 'Correo o DNI/RUT ya registrado. Por favor, inicie sesión.' });
 	  }
 
 	  const contraseñaHash = await encrypt(contrasena);
@@ -78,6 +88,7 @@ router.post('/registro',upload.single('fotoDni'),  async (req, res) => {
 		fotoDni,
         dni,
         genero,
+		token,
 		googleId,
 	  });
 	  res.status(200).send({ createUser, tipo: 'pasajera', message: 'Usuario creado' });

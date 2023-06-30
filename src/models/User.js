@@ -14,13 +14,19 @@ module.exports = (sequelize) => {
 			type: DataTypes.STRING,
 			allowNull: false,
 		},
+		correo: {
+			type: DataTypes.STRING,
+			unique: true,
+			allowNull: false,
+		},
 		foto: {
 			type: DataTypes.TEXT,
 			allowNull: true,
 		},
 		dni: {
-			type: DataTypes.STRING,
+			type: DataTypes.INTEGER,
 			allowNull: false,
+			unique: true,
 		},
 		fotoDni: {
 			type: DataTypes.TEXT,
@@ -30,15 +36,15 @@ module.exports = (sequelize) => {
 			type: DataTypes.STRING,
 			allowNull: false,
 		},
-		correo: {
-			type: DataTypes.STRING,
-			unique: true,
-			allowNull: false,
-		},
 		genero: {
 			type: DataTypes.STRING,
 			allowNull: false,
 		},
+		token: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
+
 	},
 	{ timestamps: false }
 	);

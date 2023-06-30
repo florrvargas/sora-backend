@@ -1,38 +1,68 @@
 const {Router} = require('express');
 const router = Router();
 const {Viaje, User, Driver} = require('../db');
-const { or } = require('sequelize');
 const { Op } = require("sequelize");
+const { messaging } = require('firebase-admin');
+
+// Función para enviar la notificación a las conductoras
+async function enviarNotificacionConductoras() {
+  try {
+    const conductoras = await Driver.findAll({ where: { disponible: true } });
+    const tokens = [];
+    conductoras.forEach((conductora) => {
+      if (conductora.token) {
+        tokens.push(conductora.token);
+      }
+    });
+
+    if (tokens.length > 0) {
+      const message = {
+        notification: {
+          title: 'Nuevo viaje en espera.',
+          body: 'Hay un nuevo viaje esperando por una conductora.',
+        },
+        tokens: tokens,
+      };
+
+      const response = await messaging().sendMulticast(message);
+      console.log('Notificación enviada a las conductoras:', response);
+    }
+  } catch (error) {
+    console.error('Error al enviar la notificación a las conductoras:', error);
+  }
+}
+
 
 
 router.post('/viaje', async (req, res) => {
-  
-  //agreagr fecha
 
 	const {userCorreo, estado, montoTotal, distancia, fecha,origen, destino,duracion, origenLat,origenLng, destinoLat, destinoLng } = req.body;
 
-        try {
-		
-            const createTravel = await Viaje.create({
-              userCorreo,
-              estado,
-              montoTotal,
-              distancia,
-              fecha,
-              estado,
-              origen,
-              destino,
-              duracion,
-              origenLat,
-              origenLng, 
-              destinoLat, 
-              destinoLng,
-            });
+  try {
+    const createTravel = await Viaje.create({
+      userCorreo,
+      estado,
+      montoTotal,
+      distancia,
+      fecha,
+      estado,
+      origen,
+      destino,
+      duracion,
+      origenLat,
+      origenLng, 
+      destinoLat, 
+      destinoLng,
+    });
+
+    if (estado === 'en espera') {
+      await enviarNotificacionConductoras();
+    }
     
-            res.status(200).send(createTravel);
-        } catch (error) {
-            res.status(400).send({error: error.message});
-        }
+    res.status(200).send(createTravel);
+  } catch (error) {
+      res.status(400).send({error: error.message});
+  }
       
 
 });
