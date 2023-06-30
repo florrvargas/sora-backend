@@ -7,7 +7,7 @@ const driver = require("./drivers");
 const travel = require("./travels")
 const pago = require("./pagos")
 // Configurar los routers
-
+ 
 router.use('/usuarios', user);
 router.use('/conductoras/', driver);
 router.use('/viajes', travel);
