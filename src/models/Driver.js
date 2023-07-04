@@ -29,7 +29,7 @@ module.exports = (sequelize) => {
 		},
 		edad: {
 			type: DataTypes.INTEGER,
-			allowNull: false,
+			allowNull: true,
 		},
 		dni: {
 			type: DataTypes.INTEGER,
@@ -38,7 +38,7 @@ module.exports = (sequelize) => {
 		},
 		direccion: {
 			type: DataTypes.STRING,
-			allowNull: false,
+			allowNull: true,
 		},
 		token: {
 			type: DataTypes.STRING,
@@ -46,35 +46,35 @@ module.exports = (sequelize) => {
 		},
 		carnetidentidad: {
 			type: DataTypes.TEXT,
-			allowNull: false
+			allowNull: true
 		  },
 		hojaDeVida: {
 			type: DataTypes.TEXT,
-			allowNull: false
+			allowNull: true
 		  },
 		antecedentes: {
 			type: DataTypes.TEXT,
-			allowNull: false
+			allowNull: true
 		  },
 		numeroCuenta: {
 			type: DataTypes.INTEGER,
-			allowNull: false
+			allowNull: true
 		  },
 		documentosVehiculo: {
 			type: DataTypes.TEXT,
-			allowNull: false
+			allowNull: true
 		  },
 		licenciaConducir: {
 			type: DataTypes.TEXT,
-			allowNull: false
+			allowNull: true
 		  },
 		imagenSeguro: {
 			type: DataTypes.TEXT,
-			allowNull: false
+			allowNull: true
 		  },
 		tipoDeViaje: {
 			type: DataTypes.ARRAY(DataTypes.TEXT),
-			allowNull:false
+			allowNull:true
 		  },
 		vehiculoAsegurado: {
 			type: DataTypes.ENUM(
@@ -82,7 +82,7 @@ module.exports = (sequelize) => {
 			  "no"
 			),
 			defaultValue: null,
-			allowNull: false,
+			allowNull: true,
 			validate: {
 			  isIn: [["si",
 			  "no"]],
